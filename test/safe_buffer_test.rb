@@ -38,4 +38,14 @@ class SafeBufferTest < ActiveSupport::TestCase
     new_buffer = @buffer.to_s
     assert_equal ActiveSupport::SafeBuffer, new_buffer.class
   end
+  
+  test "Should not return a safe buffer when using sub" do
+    assert !@buffer.sub('', "asdf").html_safe?
+  end
+  
+  test "Should raise argument error when using sub!" do
+    assert_raise TypeError do
+      @buffer.sub!('', "asdf")
+    end
+  end
 end
