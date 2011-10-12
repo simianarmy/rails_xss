@@ -48,4 +48,16 @@ class SafeBufferTest < ActiveSupport::TestCase
       @buffer.sub!('', "asdf")
     end
   end
+  
+  test "Should not raise an error when passed as an arg to CGI::unescapeHTML" do
+    @buffer = ActiveSupport::SafeBuffer.new "&lt;script&gt;alert&lt;/script&gt;"
+    assert_nothing_raised TypeError do
+      CGI::unescapeHTML(@buffer)
+    end
+  end
+  
+  test "Should be unescaped when passed as an arg to CGI::unescapeHTML" do
+    @buffer = ActiveSupport::SafeBuffer.new "&lt;script&gt;alert&lt;/script&gt;"
+    assert_equal "<script>alert</script>", CGI::unescapeHTML(@buffer)
+  end
 end

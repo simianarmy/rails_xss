@@ -9,7 +9,7 @@ ActiveSupport::SafeBuffer.class_eval do
     end
   end
   alias << concat
-  UNSAFE_STRING_METHODS = ["capitalize", "chomp", "chop", "delete", "downcase", "gsub", "lstrip", "next", "reverse", "rstrip", "slice", "squeeze", "strip", "sub", "succ", "swapcase", "tr", "tr_s", "upcase"].freeze
+  UNSAFE_STRING_METHODS = ["capitalize", "chomp", "chop", "delete", "downcase", "lstrip", "next", "reverse", "rstrip", "slice", "squeeze", "strip", "sub", "succ", "swapcase", "tr", "tr_s", "upcase"].freeze
 
   for unsafe_method in UNSAFE_STRING_METHODS
     class_eval <<-EOT, __FILE__, __LINE__
@@ -21,6 +21,23 @@ ActiveSupport::SafeBuffer.class_eval do
         raise TypeError, "Cannot modify SafeBuffer in place"
       end
     EOT
+  end
+  
+  def gsub_with_matz_fix(*args, &block)
+    if block
+      gsub_without_matz_fix(*args) {
+        $match = $~
+        eval("$~ = $match", block) # the trick here.
+        yield $&
+      }
+    else
+      gsub_without_matz_fix(*args, &block)
+    end
+  end
+  alias_method_chain :gsub, :matz_fix
+  
+  def gsub!(*args)
+    raise TypeError, "Cannot modify SafeBuffer in place"
   end
 end
 
